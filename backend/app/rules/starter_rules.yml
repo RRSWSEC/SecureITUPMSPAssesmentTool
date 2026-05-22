@@ -1,0 +1,221 @@
+rules:
+  - id: unsupported-windows-os
+    title: Unsupported Windows OS detected
+    severity: High
+    category: Patch
+    confidence: 0.86
+    match:
+      all:
+        - field: os_family
+          op: equals
+          value: Windows
+        - field: os_version
+          op: contains_any
+          value: ["XP", "Vista", "7", "8", "Server 2003", "Server 2008", "Server 2012"]
+    finding:
+      description: One or more Windows assets appear to be running an unsupported operating system version.
+      impact: Unsupported operating systems often stop receiving security updates and vendor support, increasing remediation effort and operational risk.
+      remediation: Confirm the operating system version, migrate to a supported release, or isolate and formally accept the risk with a replacement timeline.
+
+  - id: unsupported-linux-version
+    title: Unsupported Linux distribution/version detected
+    severity: High
+    category: Patch
+    confidence: 0.78
+    match:
+      any:
+        - field: metadata.unsupported_os
+          op: equals
+          value: true
+        - field: os_version
+          op: contains_any
+          value: ["Ubuntu 18.04", "CentOS 7", "Debian 9", "Debian 10"]
+    finding:
+      description: One or more Linux assets appear to be running a distribution or version that may be outside standard support.
+      impact: Unsupported platforms may miss security updates and complicate incident response, backup, and vendor support.
+      remediation: Validate support status, upgrade to a supported distribution release, and document any compensating controls.
+
+  - id: no-backup-status
+    title: No endpoint backup status reported
+    severity: Medium
+    category: Backup
+    confidence: 0.72
+    match:
+      any:
+        - field: metadata.backup_status
+          op: missing
+        - field: metadata.backup_status
+          op: in
+          value: ["unknown", "not_reported", "none", "missing"]
+    finding:
+      description: Endpoint backup coverage was not reported for one or more assets.
+      impact: Missing backup evidence limits recovery confidence and may increase downtime during device loss, ransomware recovery, or hardware failure.
+      remediation: Confirm backup enrollment, verify recent successful jobs, and record restore-readiness evidence for each endpoint.
+
+  - id: no-endpoint-security-status
+    title: No endpoint security/AV/EDR status reported
+    severity: Medium
+    category: Endpoint Security
+    confidence: 0.7
+    match:
+      any:
+        - field: metadata.endpoint_security_status
+          op: missing
+        - field: metadata.endpoint_security_status
+          op: in
+          value: ["unknown", "not_reported", "none", "missing"]
+    finding:
+      description: Endpoint protection status was not reported for one or more assets.
+      impact: Missing security tooling evidence reduces visibility into malware prevention, alerting, and response readiness.
+      remediation: Confirm AV/EDR installation, health, policy assignment, and recent check-in status.
+
+  - id: exposed-rdp
+    title: Host has exposed RDP
+    severity: High
+    category: Network
+    confidence: 0.82
+    match:
+      all:
+        - field: metadata.open_ports
+          op: contains
+          value: 3389
+    finding:
+      description: RDP was observed on one or more hosts within authorized scope.
+      impact: RDP exposure can increase unauthorized access risk when not restricted, monitored, and protected by strong identity controls.
+      remediation: Restrict RDP to approved management networks or VPN, require MFA where applicable, and monitor authentication activity.
+
+  - id: exposed-smb
+    title: Host has exposed SMB
+    severity: Medium
+    category: Network
+    confidence: 0.78
+    match:
+      all:
+        - field: metadata.open_ports
+          op: contains
+          value: 445
+    finding:
+      description: SMB was observed on one or more hosts within authorized scope.
+      impact: SMB availability may be expected internally, but broad exposure increases lateral movement and data access risk.
+      remediation: Limit SMB to required systems and networks, disable legacy SMB versions, and verify firewall policy.
+
+  - id: exposed-database
+    title: Host has exposed database service
+    severity: High
+    category: Network
+    confidence: 0.76
+    match:
+      any:
+        - field: metadata.open_ports
+          op: contains
+          value: 1433
+        - field: metadata.open_ports
+          op: contains
+          value: 3306
+        - field: metadata.open_ports
+          op: contains
+          value: 5432
+        - field: metadata.open_ports
+          op: contains
+          value: 27017
+    finding:
+      description: A database service was observed on one or more hosts within authorized scope.
+      impact: Database services should normally be restricted to application tiers and administrative networks to reduce data exposure risk.
+      remediation: Confirm business need, restrict access with host and network firewalls, and verify authentication and logging controls.
+
+  - id: unknown-device
+    title: Unknown device detected
+    severity: Low
+    category: Inventory
+    confidence: 0.65
+    match:
+      any:
+        - field: os_family
+          op: missing
+        - field: hostname
+          op: contains_any
+          value: ["unknown", "unidentified"]
+    finding:
+      description: One or more assets have incomplete identity or platform information.
+      impact: Unknown assets reduce inventory confidence and can hide ownership, patching, and support gaps.
+      remediation: Identify the device owner, business purpose, operating system, and management status.
+
+  - id: stale-device
+    title: Device not seen in more than 30 days
+    severity: Low
+    category: Operational Risk
+    confidence: 0.72
+    match:
+      all:
+        - field: last_seen
+          op: older_than_days
+          value: 30
+    finding:
+      description: One or more assets have not checked in or been observed for more than 30 days.
+      impact: Stale assets may indicate retired devices, broken agents, disconnected systems, or inaccurate inventory.
+      remediation: Confirm whether the asset is active, retired, offline, or missing required management agents.
+
+  - id: missing-owner
+    title: Missing asset owner
+    severity: Low
+    category: Inventory
+    confidence: 0.74
+    match:
+      all:
+        - field: owner
+          op: missing
+    finding:
+      description: One or more assets do not have an assigned owner.
+      impact: Missing ownership slows approvals, remediation assignment, lifecycle decisions, and incident follow-up.
+      remediation: Assign a business or technical owner for each asset and maintain ownership during onboarding and offboarding.
+
+  - id: critical-without-backup
+    title: Critical asset without backup evidence
+    severity: Critical
+    category: Backup
+    confidence: 0.82
+    match:
+      all:
+        - field: criticality
+          op: equals
+          value: Critical
+        - field: metadata.backup_status
+          op: not_in
+          value: ["covered", "healthy", "success"]
+    finding:
+      description: A critical asset does not have positive backup evidence in the imported data.
+      impact: Critical systems without backup evidence create elevated recovery risk and may extend outage duration.
+      remediation: Enroll the asset in endpoint or server backup, verify recent successful jobs, and document a test restore.
+
+  - id: backup-storage-over-80
+    title: Backup storage over 80 percent used
+    severity: Medium
+    category: Backup
+    confidence: 0.76
+    match:
+      all:
+        - field: metadata.backup_storage_usage_percent
+          op: gte
+          value: 80
+        - field: metadata.backup_storage_usage_percent
+          op: lt
+          value: 90
+    finding:
+      description: Backup storage usage is above the early warning threshold.
+      impact: High storage usage can lead to failed backup jobs or reduced retention if not addressed.
+      remediation: Review retention policy, remove stale backup sets where approved, and plan storage expansion before jobs fail.
+
+  - id: backup-storage-over-90
+    title: Backup storage over 90 percent used
+    severity: High
+    category: Backup
+    confidence: 0.82
+    match:
+      all:
+        - field: metadata.backup_storage_usage_percent
+          op: gte
+          value: 90
+    finding:
+      description: Backup storage usage is above the urgent warning threshold.
+      impact: Backup jobs may fail soon or retention may be shortened, reducing recovery options.
+      remediation: Add storage capacity, adjust retention with client approval, and confirm that recent backups complete successfully.
