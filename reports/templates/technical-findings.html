@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Findings</h2>
+<table>
+  <thead>
+    <tr><th>Severity</th><th>Status</th><th>Category</th><th>Finding</th><th>Confidence</th><th>Affected assets</th></tr>
+  </thead>
+  <tbody>
+  {% for finding in findings %}
+    <tr>
+      <td><span class="badge {{ finding.severity }}">{{ finding.severity }}</span></td>
+      <td>{{ finding.status }}</td>
+      <td>{{ finding.category }}</td>
+      <td>
+        <strong>{{ finding.title }}</strong><br>
+        {{ finding.description }}<br><br>
+        <strong>Evidence:</strong><br><pre>{{ finding.evidence }}</pre>
+        <strong>Impact:</strong> {{ finding.impact }}<br>
+        <strong>Recommended remediation:</strong> {{ finding.recommended_remediation }}
+      </td>
+      <td>{{ "%.0f"|format(finding.confidence_score * 100) }}%</td>
+      <td>{% for asset in finding.assets %}{{ asset.hostname }}{% if not loop.last %}, {% endif %}{% endfor %}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="6">No findings are recorded for this assessment.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

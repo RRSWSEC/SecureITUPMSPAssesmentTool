@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="summary-grid">
+  <div class="metric"><span>Risk score</span><strong>{{ risk_score }}/100</strong></div>
+  <div class="metric"><span>Assets reviewed</span><strong>{{ assets|length }}</strong></div>
+  <div class="metric"><span>Open findings</span><strong>{{ open_findings|length }}</strong></div>
+  <div class="metric"><span>Backup coverage</span><strong>{{ backup_coverage_percent }}%</strong></div>
+</section>
+
+<h2>Business Risk Summary</h2>
+<p>
+  This assessment identified risk indicators across inventory, endpoint security, backup readiness,
+  network exposure, and operational hygiene. The score is a prioritization aid for remediation planning;
+  it is not a compliance certification or a statement of compromise.
+</p>
+
+<h2>Top Risks</h2>
+<table>
+  <thead><tr><th>Severity</th><th>Risk</th><th>Category</th><th>Affected assets</th><th>Recommended next step</th></tr></thead>
+  <tbody>
+  {% for finding in top_risks %}
+    <tr>
+      <td><span class="badge {{ finding.severity }}">{{ finding.severity }}</span></td>
+      <td>{{ finding.title }}</td>
+      <td>{{ finding.category }}</td>
+      <td>{{ finding.assets|length }}</td>
+      <td>{{ finding.recommended_remediation }}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="5">No open findings are currently recorded for this assessment.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<h2>Recommended Next Steps</h2>
+<ol>
+  <li>Validate scope, inventory completeness, and assessment evidence with the client sponsor.</li>
+  <li>Address critical and high severity findings before lower-risk hygiene improvements.</li>
+  <li>Confirm backup coverage and restore-readiness for business-critical systems.</li>
+  <li>Track accepted risks with owner, review date, and compensating controls.</li>
+</ol>
+
+<h2>What Secure IT UP Can Help Remediate</h2>
+<p>
+  Secure IT UP can assist with endpoint management, backup coverage validation, patch planning,
+  firewall policy review, owner assignment, and evidence collection for compliance-support activities.
+</p>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="summary-grid">
+  <div class="metric"><span>Total assets</span><strong>{{ assets|length }}</strong></div>
+  <div class="metric"><span>Endpoint coverage</span><strong>{{ endpoint_coverage_percent }}%</strong></div>
+  <div class="metric"><span>Backup coverage</span><strong>{{ backup_coverage_percent }}%</strong></div>
+  <div class="metric"><span>Open risks</span><strong>{{ open_findings|length }}</strong></div>
+</section>
+
+<h2>Asset List</h2>
+<table>
+  <thead><tr><th>Hostname</th><th>IP</th><th>OS</th><th>Last seen</th><th>Tags</th><th>Criticality</th><th>Owner</th></tr></thead>
+  <tbody>
+  {% for asset in assets %}
+    <tr>
+      <td>{{ asset.hostname }}</td>
+      <td>{{ asset.ip_address or "" }}</td>
+      <td>{{ asset.os_family or "" }} {{ asset.os_version or "" }}</td>
+      <td>{{ asset.last_seen or "" }}</td>
+      <td>{{ asset.tags|join(", ") }}</td>
+      <td>{{ asset.criticality }}</td>
+      <td>{{ asset.owner or "Unassigned" }}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="7">No assets are recorded for this assessment.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

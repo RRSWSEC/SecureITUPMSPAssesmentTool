@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Prioritized Action List</h2>
+<table>
+  <thead><tr><th>Priority</th><th>Severity</th><th>Action</th><th>Owner</th><th>Status</th></tr></thead>
+  <tbody>
+  {% for finding in top_risks %}
+    <tr>
+      <td>{{ loop.index }}</td>
+      <td><span class="badge {{ finding.severity }}">{{ finding.severity }}</span></td>
+      <td>{{ finding.recommended_remediation }}</td>
+      <td>Client/MSP to assign</td>
+      <td>{{ finding.status }}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="5">No open findings are recorded for remediation planning.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<h2>Quick Wins</h2>
+<div class="section-band">
+  <p>Confirm missing owners, validate endpoint protection status, review backup enrollment gaps, and remove stale inventory records after client approval.</p>
+</div>
+
+<h2>30/60/90 Day Roadmap</h2>
+<table>
+  <thead><tr><th>Window</th><th>Recommended focus</th><th>Evidence to retain</th></tr></thead>
+  <tbody>
+    <tr><td>30 days</td><td>Critical/high findings, backup evidence, endpoint security visibility.</td><td>Change tickets, screenshots, policy exports, backup job evidence.</td></tr>
+    <tr><td>60 days</td><td>Network exposure reduction, asset ownership, unsupported OS planning.</td><td>Firewall rule review, asset owner list, upgrade plan.</td></tr>
+    <tr><td>90 days</td><td>Repeat assessment, verify exceptions, close or renew accepted risks.</td><td>Updated report, accepted-risk register, restore-readiness notes.</td></tr>
+  </tbody>
+</table>
+{% endblock %}

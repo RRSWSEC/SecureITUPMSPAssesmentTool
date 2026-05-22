@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="summary-grid">
+  <div class="metric"><span>Backup coverage</span><strong>{{ backup_coverage_percent }}%</strong></div>
+  <div class="metric"><span>Missing evidence</span><strong>{{ backup_missing|length }}</strong></div>
+  <div class="metric"><span>Total assets</span><strong>{{ assets|length }}</strong></div>
+  <div class="metric"><span>Open backup findings</span><strong>{{ category_counts.get("Backup", 0) }}</strong></div>
+</section>
+
+<h2>Covered Endpoints</h2>
+<table>
+  <thead><tr><th>Hostname</th><th>Backup status</th><th>Usage</th><th>Restore-readiness notes</th></tr></thead>
+  <tbody>
+  {% for asset in assets if asset.metadata_json.get("backup_status") in ["covered", "healthy", "success"] %}
+    <tr>
+      <td>{{ asset.hostname }}</td>
+      <td>{{ asset.metadata_json.get("backup_status") }}</td>
+      <td>{{ asset.metadata_json.get("backup_storage_usage_percent", "") }}</td>
+      <td>{{ asset.metadata_json.get("restore_readiness_notes", "Restore test evidence not attached.") }}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="4">No covered endpoint backup evidence was imported.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<h2>Endpoints Missing Backup Evidence</h2>
+<table>
+  <thead><tr><th>Hostname</th><th>Criticality</th><th>Owner</th><th>Recommended remediation</th></tr></thead>
+  <tbody>
+  {% for asset in backup_missing %}
+    <tr>
+      <td>{{ asset.hostname }}</td>
+      <td>{{ asset.criticality }}</td>
+      <td>{{ asset.owner or "Unassigned" }}</td>
+      <td>Confirm backup enrollment, latest successful job, retention policy, and restore test status.</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="4">All imported assets include positive backup coverage evidence.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<p class="note">Storage overage placeholders should be replaced with client-specific billing, retention, and storage capacity details before delivery.</p>
+{% endblock %}
